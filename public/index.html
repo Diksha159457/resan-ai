@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resan AI</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="mentor-panel" aria-label="Resan AI setup">
+        <div class="brand">
+          <span class="brand-mark">R</span>
+          <div>
+            <h1>Resan AI</h1>
+            <p>The journey-minded creative mentor.</p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="domain">Field</label>
+          <select id="domain">
+            <option>Creative Writing</option>
+            <option>Coding</option>
+            <option>Finance</option>
+            <option>Digital Art</option>
+            <option>Film & Media</option>
+            <option>Music</option>
+            <option>Math & Science</option>
+            <option>Career Planning</option>
+            <option>Project Planning</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label for="audience">Who is this for?</label>
+          <input id="audience" placeholder="Class, client, portfolio, yourself..." />
+        </div>
+
+        <div class="field-group">
+          <label>Feeling</label>
+          <div class="chip-grid" id="feelingChips">
+            <button type="button" class="chip selected">Curious</button>
+            <button type="button" class="chip">Stuck</button>
+            <button type="button" class="chip">Anxious</button>
+            <button type="button" class="chip">Excited</button>
+            <button type="button" class="chip">Overwhelmed</button>
+            <button type="button" class="chip">Focused</button>
+          </div>
+        </div>
+
+        <div class="principles">
+          <h2>Mentor Rules</h2>
+          <p>One micro-step. One question. Your thinking stays yours.</p>
+        </div>
+      </section>
+
+      <section class="chat-panel" aria-label="Chat with Resan AI">
+        <header class="chat-header">
+          <div>
+            <p class="eyebrow">Guide Mode</p>
+            <h2>Build without outsourcing your spark.</h2>
+          </div>
+          <span id="connectionMode">Local mentor</span>
+        </header>
+
+        <div class="messages" id="messages" aria-live="polite"></div>
+
+        <form class="composer" id="chatForm">
+          <textarea
+            id="messageInput"
+            rows="2"
+            placeholder="Tell Resan what you are making, or paste a rough piece to improve..."
+          ></textarea>
+          <button type="submit">Send</button>
+        </form>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

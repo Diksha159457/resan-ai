@@ -1,0 +1,14 @@
+{
+  "name": "resan-ai",
+  "version": "1.0.0",
+  "description": "A creativity-preserving mentor chatbot for students and professionals.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: resan-ai
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: OPENAI_MODEL
+        value: gpt-5.6-luna
+      - key: OPENAI_API_KEY
+        sync: false

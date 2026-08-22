@@ -34,6 +34,17 @@
         </div>
 
         <div class="field-group">
+          <label for="stage">Project stage</label>
+          <select id="stage">
+            <option>Starting an idea</option>
+            <option>Improving a draft</option>
+            <option>Learning a concept</option>
+            <option>Planning execution</option>
+            <option>Practicing feedback</option>
+          </select>
+        </div>
+
+        <div class="field-group">
           <label for="audience">Who is this for?</label>
           <input id="audience" placeholder="Class, client, portfolio, yourself..." />
         </div>
@@ -50,6 +61,17 @@
           </div>
         </div>
 
+        <div class="session-card">
+          <div>
+            <strong id="turnCount">0</strong>
+            <span>mentor turns</span>
+          </div>
+          <div>
+            <strong id="sessionMode">Guide</strong>
+            <span>active mode</span>
+          </div>
+        </div>
+
         <div class="principles">
           <h2>Mentor Rules</h2>
           <p>One micro-step. One question. Your thinking stays yours.</p>
@@ -62,8 +84,19 @@
             <p class="eyebrow">Guide Mode</p>
             <h2>Build without outsourcing your spark.</h2>
           </div>
-          <span id="connectionMode">Local mentor</span>
+          <div class="header-actions">
+            <span id="connectionMode">Local mentor</span>
+            <button type="button" class="ghost-button" id="exportButton">Export</button>
+            <button type="button" class="ghost-button" id="resetButton">Reset</button>
+          </div>
         </header>
+
+        <div class="starter-strip" aria-label="Conversation starters">
+          <button type="button" data-prompt="I want to start a new project, but I only have a rough idea.">Start idea</button>
+          <button type="button" data-prompt="I have a draft. Help me improve one small part without rewriting everything.">Improve draft</button>
+          <button type="button" data-prompt="Teach me this step by step, but make me try first.">Learn stepwise</button>
+          <button type="button" data-prompt="I feel stuck. Give me two tiny options to choose from.">Unstick me</button>
+        </div>
 
         <div class="messages" id="messages" aria-live="polite"></div>
 
@@ -75,6 +108,7 @@
           ></textarea>
           <button type="submit">Send</button>
         </form>
+        <p class="status-line" id="statusLine" role="status">Ready for one thoughtful step.</p>
       </section>
     </main>
 

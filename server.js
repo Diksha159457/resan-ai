@@ -6,8 +6,9 @@ const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "127.0.0.1";
 const PUBLIC_DIR = join(process.cwd(), "public");
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.6-luna";
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5.1";
 const MAX_BODY_SIZE = 1_000_000;
+const HISTORY_LIMIT = 16;
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -54,18 +55,33 @@ async function readBody(request) {
 }
 
 function fallbackMentorReply({ message, profile }) {
-  const feeling = profile?.feeling ? ` Since you're feeling ${profile.feeling.toLowerCase()}, let's keep it small.` : "";
-  const domain = profile?.domain ? ` for ${profile.domain}` : "";
+  const trimmedMessage = message.trim();
+  const feeling = profile?.feeling || "Curious";
+  const domain = profile?.domain || "your project";
+  const lowerMessage = trimmedMessage.toLowerCase();
 
   if (/\b(emergency|due in|no time|just give me the answer)\b/i.test(message)) {
     return "Emergency mode is available, but I need the exact task or prompt first so I can produce the finished result. Emergency mode active. Let me know when you're ready to switch back to Resan Guide mode.";
   }
 
-  if (!message.trim()) {
+  if (!trimmedMessage) {
     return "What are you making today, who is it for, and how are you feeling about it right now?";
   }
 
-  return `Good. I hear the project${domain}.${feeling} Before we shape it, write one rough sentence that says what you want this to become and who should feel helped by it.`;
+  if (lowerMessage.startsWith("what is ") || lowerMessage.startsWith("explain ")) {
+    const topic = trimmedMessage.replace(/^(what is|explain)\s+/i, "").replace(/[?.!]+$/, "");
+    return `${topic} is worth learning through use, not just definition. In your own words first: where have you seen ${topic}, or what do you think it helps people do?`;
+  }
+
+  if (/\b(stuck|confused|don't know|dont know|help)\b/i.test(trimmedMessage)) {
+    return `Since you're feeling ${feeling.toLowerCase()}, choose one tiny next step for ${domain}: describe the goal, name the audience, or show me your rough attempt. Which one can you do now?`;
+  }
+
+  if (trimmedMessage.length > 180) {
+    return "There is something real here. Pick one part you care about most, and I will help you refine that piece without taking over the whole work.";
+  }
+
+  return `Good starting point for ${domain}. Now make it yours: write one rough sentence about what you want this to become and who should feel helped by it.`;
 }
 
 async function askOpenAI({ messages, profile }) {
@@ -75,7 +91,7 @@ async function askOpenAI({ messages, profile }) {
       role: "user",
       content: `Current user profile: ${JSON.stringify(profile || {})}`
     },
-    ...messages.slice(-12).map((message) => ({
+    ...messages.slice(-HISTORY_LIMIT).map((message) => ({
       role: message.role === "assistant" ? "assistant" : "user",
       content: String(message.content || "")
     }))
@@ -91,6 +107,7 @@ async function askOpenAI({ messages, profile }) {
       model: OPENAI_MODEL,
       input,
       max_output_tokens: 220,
+      reasoning: { effort: "minimal" },
       store: false
     })
   });
@@ -127,7 +144,14 @@ async function handleChat(request, response) {
     }
 
     const body = JSON.parse(await readBody(request) || "{}");
-    const messages = Array.isArray(body.messages) ? body.messages : [];
+    const messages = Array.isArray(body.messages)
+      ? body.messages
+          .filter((message) => message && typeof message.content === "string")
+          .map((message) => ({
+            role: message.role === "assistant" ? "assistant" : "user",
+            content: message.content.slice(0, 4000)
+          }))
+      : [];
     const profile = body.profile && typeof body.profile === "object" ? body.profile : {};
     const lastMessage = messages.at(-1)?.content || "";
 
@@ -136,13 +160,25 @@ async function handleChat(request, response) {
       return;
     }
 
-    const reply = OPENAI_API_KEY
-      ? await askOpenAI({ messages, profile })
-      : fallbackMentorReply({ message: lastMessage, profile });
+    let reply;
+    let mode = "local";
+
+    if (OPENAI_API_KEY) {
+      try {
+        reply = await askOpenAI({ messages, profile });
+        mode = "openai";
+      } catch (error) {
+        console.error(error.message);
+        reply = fallbackMentorReply({ message: lastMessage, profile });
+        mode = "fallback";
+      }
+    } else {
+      reply = fallbackMentorReply({ message: lastMessage, profile });
+    }
 
     jsonResponse(request, response, 200, {
       reply,
-      mode: OPENAI_API_KEY ? "openai" : "local"
+      mode
     });
   } catch (error) {
     const isBadRequest = error instanceof SyntaxError || error.message === "Request body is too large.";
